@@ -1,9 +1,5 @@
-locals {
-  action = var.stop == true ? "Stop" : "Start"
-}
-
 resource "aws_cloudwatch_event_rule" "stop_instances" {
-  name                = "${local.action}Instance${var.use_case}"
+  name                = "${local.action}Instance${local.id}"
   description         = "${local.action} instances"
   schedule_expression = "cron(${var.cron_schedule})"
 }
@@ -15,7 +11,7 @@ resource "aws_cloudwatch_event_target" "lambda" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch" {
-  statement_id  = "AllowExecutionFromCloudWatch${var.use_case}"
+  statement_id  = "AllowExecutionFromCloudWatch${local.id}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.auto_stopper.function_name
   principal     = "events.amazonaws.com"

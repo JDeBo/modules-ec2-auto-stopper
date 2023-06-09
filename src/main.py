@@ -2,10 +2,15 @@ import boto3
 import os
 import json
 
-region = 'us-east-2'
-instances = list(json.loads((os.environ['EC2_INSTANCES'])).values())
-ec2 = boto3.client('ec2', region_name=region)
+instances = list(json.loads((os.environ["EC2_INSTANCES"])).values())
+stopping = json.loads((os.environ["STOPPING"])).values()
+ec2 = boto3.client("ec2")
+
 
 def lambda_handler(event, context):
-    ec2.stop_instances(InstanceIds=instances)
-    print('stopped your instances: ' + str(instances))
+    if not stopping:
+        ec2.start_instances(InstanceIds=instances)
+        print("started your instances: " + str(instances))
+    else:
+        ec2.stop_instances(InstanceIds=instances)
+        print("stopped your instances: " + str(instances))

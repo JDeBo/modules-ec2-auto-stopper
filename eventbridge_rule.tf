@@ -1,12 +1,16 @@
+locals {
+  action = var.stop == true ? "Stop" : "Start"
+}
+
 resource "aws_cloudwatch_event_rule" "stop_instances" {
-  name                = "StopInstance${var.use_case}"
-  description         = "Stop instances nightly"
-  schedule_expression = "cron(0 5 * * ? *)"
+  name                = "${local.action}Instance${var.use_case}"
+  description         = "${local.action} instances"
+  schedule_expression = "cron(${var.cron_schedule})"
 }
 
 resource "aws_cloudwatch_event_target" "lambda" {
   rule      = aws_cloudwatch_event_rule.stop_instances.name
-  target_id = "StopInstance"
+  target_id = "${local.action}Instance"
   arn       = aws_lambda_function.auto_stopper.arn
 }
 

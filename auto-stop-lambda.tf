@@ -20,16 +20,19 @@ EOF
 
 data "aws_iam_policy_document" "ec2_lambda" {
   statement {
-    sid       = "LambdaStopInstances"
+    sid       = "LambdaManageInstances"
     effect    = "Allow"
-    actions   = ["ec2:StopInstances"]
+    actions   = [
+      "ec2:StopInstances",
+      "ec2:StartInstances"
+      ]
     resources = ["*"]
   }
 }
 
 resource "aws_iam_policy" "ec2_lambda" {
   path        = "/"
-  description = "LambdaStopEC2-${var.use_case}"
+  description = "LambdaEC2-${var.use_case}"
   policy      = data.aws_iam_policy_document.ec2_lambda.json
 }
 
@@ -45,7 +48,7 @@ resource "aws_iam_role_policy_attachment" "basic_execution" {
 
 resource "aws_lambda_function" "auto_stopper" {
   filename         = "${path.module}/auto_stopper.zip"
-  function_name    = "auto_stop_ec2s_${var.use_case}"
+  function_name    = "auto_${lower(local.action)}_ec2s_${var.use_case}"
   role             = aws_iam_role.iam_for_lambda.arn
   handler          = "main.lambda_handler"
   source_code_hash = data.archive_file.auto_stopper.output_base64sha256
@@ -55,6 +58,7 @@ resource "aws_lambda_function" "auto_stopper" {
   environment {
     variables = {
       EC2_INSTANCES = jsonencode(var.ec2_map)
+      STOPPING = jsonencode(var.stop)
     }
   }
   depends_on = [

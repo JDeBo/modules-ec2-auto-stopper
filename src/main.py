@@ -3,7 +3,7 @@ import os
 import json
 
 instances = list(json.loads((os.environ["EC2_INSTANCES"])).values())
-stopping = json.loads((os.environ["STOPPING"])).values()
+stopping = json.loads((os.environ["STOPPING"]))
 ec2 = boto3.client("ec2")
 
 
